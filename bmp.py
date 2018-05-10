@@ -279,14 +279,13 @@ def cor(comp1, comp2):
     tc = [aminma[i]*bminba[i] for i in range(len(aminma))]
     core = mato(tc) / (quadr(comp1) * quadr(comp2))
     return core
-def shift(steps,lst):
+def shift(steps,stepsy,lst):
     """ Циклический кольцевой сдвиг списка до минимума"""
     lst = lst[steps:] + lst[:steps] # 1-й вариант
-    #for i in range(steps): # 2-й вариант
-        #b = lst[0]
-        #for i in range(len(lst)-1):
-            #lst[i] = lst[i+1]
-        #lst[len(lst)-1] = b
+    for i in range(len(lst)):
+        if i + stepsy*512 >= len(lst):
+            return lst
+        lst[i] = lst[i+stepsy*512]
     return lst
 def main():
     rows = read_rows("asserts/lena512color.bmp")
@@ -299,6 +298,15 @@ def main():
     green = filtergreen(sub_pixels)
 
     red = filterred(sub_pixels)
+
+    blueshaped = np.array(blue)
+    blueshaped = blueshaped.reshape((512,512))
+    redshaped = np.array(red)
+    redshaped = redshaped.reshape((512, 512))
+    greenshaped = np.array(green)
+    greenshaped = greenshaped.reshape((512, 512))
+    print(greenshaped.shape)
+
     m1 = [] #green
     m2 = []
     m3 = [] #red
@@ -306,9 +314,9 @@ def main():
     m5 = [] #blue
     m6 = []
     for i in range(0,100,10):
-        greensmesh5 = math.fabs(cor(green, shift(i,green)))
-        redsmesh5 = math.fabs(cor(red, shift(i,red)))
-        bluesmesh5 = math.fabs(cor(blue, shift(i,blue)))
+        greensmesh5 = math.fabs(cor(green, shift(i,10,green)))
+        redsmesh5 = math.fabs(cor(red, shift(i,10,red)))
+        bluesmesh5 = math.fabs(cor(blue, shift(i,10,blue)))
 
         m1.append(i)
         m2.append(greensmesh5)
