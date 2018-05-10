@@ -299,11 +299,31 @@ def main():
     green = filtergreen(sub_pixels)
 
     red = filterred(sub_pixels)
+    m1 = [] #green
+    m2 = []
+    m3 = [] #red
+    m4 = []
+    m5 = [] #blue
+    m6 = []
+    for i in range(0,100,10):
+        greensmesh5 = math.fabs(cor(green, shift(i,green)))
+        redsmesh5 = math.fabs(cor(red, shift(i,red)))
+        bluesmesh5 = math.fabs(cor(blue, shift(i,blue)))
 
-    
-    greensmesh5 = math.fabs(cor(green, shift(5,green)))
+        m1.append(i)
+        m2.append(greensmesh5)
+        m3.append(i)
+        m4.append(redsmesh5)
+        m5.append(i)
+        m6.append(bluesmesh5)
+    plt.plot(m1, m2, label="l=%s"%('green',))
+    plt.plot(m3, m4, label="l=%s"%('red',))
+    plt.plot(m5, m6, label="l=%s"%('blue',))
+    leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+    leg.get_frame().set_alpha(0.5)
+    plt.show()
     print(greensmesh5,'GREENSNESH')
-    plt.plot(10, greensmesh5)
+    #   plt.plot(10, greensmesh5)
     #plt.show()
 
     corg = math.fabs(cor(green, blue))
