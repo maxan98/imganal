@@ -310,75 +310,184 @@ def main():
     greenshaped = greenshaped.reshape((512, 512))
     print(greenshaped.shape)
 
-    m1 = [] #green
-    m2 = []
-    m3 = [] #red
-    m4 = []
-    m5 = [] #blue
-    m6 = []
-    for i in range(0,105,10):
-        greensmesh5 = math.fabs(cor(green, shift(i,10,green)))
-       # redsmesh5 = math.fabs(cor(red, shift(i,10,red)))
-       # bluesmesh5 = math.fabs(cor(blue, shift(i,10,blue)))
+    # m1 = [] #green
+    # m2 = []
+    # m3 = [] #red
+    # m4 = []
+    # m5 = [] #blue
+    # m6 = []
+    #
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(green, shift(i, 0, green)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="green=%s" % ('0',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(green, shift(i, 5, green)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="green=%s" % ('5',))
+    #
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(green, shift(i, -5, green)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="green=%s" % ('-5',))
+    #
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(green, shift(i, 10, green)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="green=%s" % ('10',))
+    #
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(green, shift(i, -10, green)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="green=%s" % ('-10',))
+    #
+    # #plt.plot(m3, m4, label="l=%s"%('red',))
+    # #plt.plot(m5, m6, label="l=%s"%('blue',))
+    # leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+    # leg.get_frame().set_alpha(0.5)
+    # plt.show()
+    # print(greensmesh5,'GREENSNESH')
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(red, shift(i, 0, red)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="red=%s" % ('0',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(red, shift(i, 5, red)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="red=%s" % ('5',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(red, shift(i, -5, red)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="red=%s" % ('-5',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(red, shift(i, 10, red)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="red=%s" % ('10',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(red, shift(i, -10, red)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="red=%s" % ('-10',))
+    #
+    # # plt.plot(m3, m4, label="l=%s"%('red',))
+    # # plt.plot(m5, m6, label="l=%s"%('blue',))
+    # leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+    # leg.get_frame().set_alpha(0.5)
+    # plt.show()
+    # print(greensmesh5, 'GREENSNESH')
+    #
+    #
+    #
+    #
+    #
 
-        m1.append(i)
-        m2.append(greensmesh5)
-        #m3.append(i)
-        #m4.append(redsmesh5)
-        #m5.append(i)
-        #m6.append(bluesmesh5)
-    plt.plot(m1, m2, label="l=%s"%('green',))
-    for i in range(0, 105, 10):
-         greensmesh5 = math.fabs(cor(green, shift(i,5,green)))
-       # redsmesh5 = math.fabs(cor(red, shift(i,10,red)))
-       # bluesmesh5 = math.fabs(cor(blue, shift(i,10,blue)))
-
-        #m1.append(i)
-        #m2.append(greensmesh5)
-         m3.append(i)
-         m4.append(greensmesh5)
-        #m5.append(i)
-        #m6.append(bluesmesh5)
-    plt.plot(m3, m4, label="l=%s"%('green',))
 
 
-    for i in range(0, 105, 10):
-         greensmesh5 = math.fabs(cor(green, shift(i,-5,green)))
-       # redsmesh5 = math.fabs(cor(red, shift(i,10,red)))
-       # bluesmesh5 = math.fabs(cor(blue, shift(i,10,blue)))
 
-        #m1.append(i)
-        #m2.append(greensmesh5)
-         #m3.append(i)
-         #m4.append(greensmesh5)
-         m5.append(i)
-         m6.append(greensmesh5)
-    plt.plot(m5, m6, label="l=%s"%('green',))
     m5.clear()
     m6.clear()
     for i in range(0, 105, 10):
-         greensmesh5 = math.fabs(cor(green, shift(i,0,green)))
+        greensmesh5 = math.fabs(cor(blue, shift(i, 0, blue)))
 
-       # redsmesh5 = math.fabs(cor(red, shift(i,10,red)))
-       # bluesmesh5 = math.fabs(cor(blue, shift(i,10,blue)))
+        m5.append(i)
+        m6.append(greensmesh5)
+    plt.plot(m5, m6, label="blue=%s" % ('0',))
 
-        #m1.append(i)
-        #m2.append(greensmesh5)
-         #m3.append(i)
-         #m4.append(greensmesh5)
-         m5.append(i)
-         m6.append(greensmesh5)
-    plt.plot(m5, m6, label="l=%s"%('green',))
-    #plt.plot(m3, m4, label="l=%s"%('red',))
-    #plt.plot(m5, m6, label="l=%s"%('blue',))
+    m5.clear()
+    m6.clear()
+    for i in range(0, 105, 10):
+        greensmesh5 = math.fabs(cor(blue, shift(i, 5, blue)))
+
+        m5.append(i)
+        m6.append(greensmesh5)
+    plt.plot(m5, m6, label="blue=%s" % ('5',))
+
+    m5.clear()
+    m6.clear()
+    for i in range(0, 105, 10):
+        greensmesh5 = math.fabs(cor(blue, shift(i, -5, blue)))
+
+        m5.append(i)
+        m6.append(greensmesh5)
+    plt.plot(m5, m6, label="blue=%s" % ('-5',))
+
+    m5.clear()
+    m6.clear()
+    for i in range(0, 105, 10):
+        greensmesh5 = math.fabs(cor(blue, shift(i, 10, blue)))
+
+        m5.append(i)
+        m6.append(greensmesh5)
+    plt.plot(m5, m6, label="blue=%s" % ('10',))
+
+    m5.clear()
+    m6.clear()
+    for i in range(0, 105, 10):
+        greensmesh5 = math.fabs(cor(blue, shift(i, -10, blue)))
+
+        m5.append(i)
+        m6.append(greensmesh5)
+    plt.plot(m5, m6, label="blue=%s" % ('-10',))
+
+    # plt.plot(m3, m4, label="l=%s"%('red',))
+    # plt.plot(m5, m6, label="l=%s"%('blue',))
     leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
     leg.get_frame().set_alpha(0.5)
     plt.show()
-    print(greensmesh5,'GREENSNESH')
+    print(greensmesh5, 'GREENSNESH')
 
 
-    #   plt.plot(10, greensmesh5)
-    #plt.show()
+
+
 
     corg = math.fabs(cor(green, blue))
     corb = math.fabs(cor(red, blue))
