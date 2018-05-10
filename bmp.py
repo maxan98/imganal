@@ -1,7 +1,7 @@
 import math
 from colorama import *
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 def read_rows(path):
     image_file = open(path, "rb")
@@ -61,7 +61,7 @@ def read_rows(path):
 def repack_sub_pixels(rows):
     print("Repacking pixels...")
     sub_pixels = []
-    for row in rows:
+    for row in reversed(rows):
         for sub_pixel in row:
             sub_pixels.append(sub_pixel)
 
@@ -92,7 +92,6 @@ def filtergreen(s_pixels):
     for i in s_pixels[1::3]:
         green.append(0)
         green.append(i)
-
         green.append(0)
     image_filee.write(bytearray(green))
     image_filee.close()
@@ -110,7 +109,6 @@ def filterred(s_pixels):
     image_filee.write(bytearray(header))
     for i in s_pixels[2::3]:
         red.append(0)
-
         red.append(0)
         red.append(i)
     image_filee.write(bytearray(red))
@@ -262,7 +260,7 @@ def mato(comp):
 def quadr(comp):
     tmp = 0
     m = mato(comp)
-    print(m)
+    #print(m)
     for i in comp:
         tmp += (i - m)**2
 
@@ -281,18 +279,32 @@ def cor(comp1, comp2):
     tc = [aminma[i]*bminba[i] for i in range(len(aminma))]
     core = mato(tc) / (quadr(comp1) * quadr(comp2))
     return core
-
-
+def shift(steps,lst):
+    """ Циклический кольцевой сдвиг списка до минимума"""
+    lst = lst[steps:] + lst[:steps] # 1-й вариант
+    #for i in range(steps): # 2-й вариант
+        #b = lst[0]
+        #for i in range(len(lst)-1):
+            #lst[i] = lst[i+1]
+        #lst[len(lst)-1] = b
+    return lst
 def main():
-    rows = read_rows("asserts/l.bmp")
+    rows = read_rows("asserts/lena512color.bmp")
 
 
     sub_pixels = repack_sub_pixels(rows)
+    #sub_pixels = [i for i in reversed(sub_pixels)]
     blue = filterblue(sub_pixels)
 
     green = filtergreen(sub_pixels)
 
     red = filterred(sub_pixels)
+
+    
+    greensmesh5 = math.fabs(cor(green, shift(5,green)))
+    print(greensmesh5,'GREENSNESH')
+    plt.plot(10, greensmesh5)
+    #plt.show()
 
     corg = math.fabs(cor(green, blue))
     corb = math.fabs(cor(red, blue))
@@ -304,8 +316,8 @@ def main():
     print(''+Style.RESET_ALL)
     print(len(green), len(red), len(blue))
     ycomp = [int(0.299*red[i]+0.587*green[i]+0.114*blue[i]) for i in range(len(green))]
-    cbcomp = [int(0.5643*(blue[i]-ycomp[i])+128) for i in range(len(ycomp))]
-    crcomp = [int(0.7132*(red[i]-ycomp[i])+128) for i in range(len(ycomp))]
+    cbcomp = [int(0.5643*(blue[i]-ycomp[i])+128) for i in range(len(green))]
+    crcomp = [int(0.7132*(red[i]-ycomp[i])+128) for i in range(len(green))]
     writeycbcr(ycomp, 'ycomp')
     writeycbcr(cbcomp, 'cbcomp')
     writeycbcr(crcomp, 'crcomp')
