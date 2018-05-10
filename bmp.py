@@ -291,7 +291,7 @@ def shift(steps,stepsy,lst):
         lst[i] = lst[i+stepsy*512]
     return lst
 def main():
-    rows = read_rows("asserts/lena512color.bmp")
+    rows = read_rows("asserts/whore.bmp")
 
 
     sub_pixels = repack_sub_pixels(rows)
@@ -310,12 +310,12 @@ def main():
     greenshaped = greenshaped.reshape((512, 512))
     print(greenshaped.shape)
 
-    # m1 = [] #green
-    # m2 = []
-    # m3 = [] #red
-    # m4 = []
-    # m5 = [] #blue
-    # m6 = []
+    m1 = [] #green
+    m2 = []
+    m3 = [] #red
+    m4 = []
+    m5 = [] #blue
+    m6 = []
     #
     #
     # m5.clear()
@@ -430,60 +430,60 @@ def main():
     #
     #
 
-
-
-
-    m5.clear()
-    m6.clear()
-    for i in range(0, 105, 10):
-        greensmesh5 = math.fabs(cor(blue, shift(i, 0, blue)))
-
-        m5.append(i)
-        m6.append(greensmesh5)
-    plt.plot(m5, m6, label="blue=%s" % ('0',))
-
-    m5.clear()
-    m6.clear()
-    for i in range(0, 105, 10):
-        greensmesh5 = math.fabs(cor(blue, shift(i, 5, blue)))
-
-        m5.append(i)
-        m6.append(greensmesh5)
-    plt.plot(m5, m6, label="blue=%s" % ('5',))
-
-    m5.clear()
-    m6.clear()
-    for i in range(0, 105, 10):
-        greensmesh5 = math.fabs(cor(blue, shift(i, -5, blue)))
-
-        m5.append(i)
-        m6.append(greensmesh5)
-    plt.plot(m5, m6, label="blue=%s" % ('-5',))
-
-    m5.clear()
-    m6.clear()
-    for i in range(0, 105, 10):
-        greensmesh5 = math.fabs(cor(blue, shift(i, 10, blue)))
-
-        m5.append(i)
-        m6.append(greensmesh5)
-    plt.plot(m5, m6, label="blue=%s" % ('10',))
-
-    m5.clear()
-    m6.clear()
-    for i in range(0, 105, 10):
-        greensmesh5 = math.fabs(cor(blue, shift(i, -10, blue)))
-
-        m5.append(i)
-        m6.append(greensmesh5)
-    plt.plot(m5, m6, label="blue=%s" % ('-10',))
-
-    # plt.plot(m3, m4, label="l=%s"%('red',))
-    # plt.plot(m5, m6, label="l=%s"%('blue',))
-    leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
-    leg.get_frame().set_alpha(0.5)
-    plt.show()
-    print(greensmesh5, 'GREENSNESH')
+    #
+    #
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(blue, shift(i, 0, blue)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="blue=%s" % ('0',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(blue, shift(i, 5, blue)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="blue=%s" % ('5',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(blue, shift(i, -5, blue)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="blue=%s" % ('-5',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(blue, shift(i, 10, blue)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="blue=%s" % ('10',))
+    #
+    # m5.clear()
+    # m6.clear()
+    # for i in range(0, 105, 10):
+    #     greensmesh5 = math.fabs(cor(blue, shift(i, -10, blue)))
+    #
+    #     m5.append(i)
+    #     m6.append(greensmesh5)
+    # plt.plot(m5, m6, label="blue=%s" % ('-10',))
+    #
+    # # plt.plot(m3, m4, label="l=%s"%('red',))
+    # # plt.plot(m5, m6, label="l=%s"%('blue',))
+    # leg = plt.legend(loc='best', ncol=2, mode="expand", shadow=True, fancybox=True)
+    # leg.get_frame().set_alpha(0.5)
+    # plt.show()
+    # print(greensmesh5, 'GREENSNESH')
 
 
 
@@ -512,9 +512,9 @@ def main():
     print('Cor YCR', corb)
     print('Cor CRCB', corr)
 
-    grestored = [ycomp[i]-0.714*(crcomp[i]-128)-0.334*(cbcomp[i]-128)for i in range(len(ycomp))]
-    rrestored = [ycomp[i] + 1.402*(crcomp[i]-128)for i in range(len(ycomp))]
-    brestored = [ycomp[i]+1.772*(cbcomp[i]-128)for i in range(len(ycomp))]
+    grestored = [int(ycomp[i]-0.714*(crcomp[i]-128)-0.334*(cbcomp[i]-128))for i in range(len(green))]
+    rrestored = [int(ycomp[i] + 1.402*(crcomp[i]-128))for i in range(len(red))]
+    brestored = [int(ycomp[i]+1.772*(cbcomp[i]-128))for i in range(len(blue))]
     grestored = clipping(grestored)
     rrestored = clipping(rrestored)
     brestored = clipping(brestored)
