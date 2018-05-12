@@ -1,6 +1,7 @@
 import math
 from colorama import *
 import numpy as np
+from pprint import pprint
 import matplotlib.pyplot as plt
 
 def read_rows(path):
@@ -116,6 +117,7 @@ def filterred(s_pixels):
     for i in s_pixels[2::3]:
 
         redret.append(i)
+
     return redret
 
 
@@ -165,7 +167,16 @@ def writeycbcr(comp, name):
         res.append(int(i))
     image_file.write(bytearray(res))
     image_file.close()
-
+def writepic(red,green,blue, name):
+    image_file = open('asserts/'+name+'.bmp', 'wb')
+    image_file.write(bytearray(header))
+    res = []
+    for i in range(len(blue)):
+        res.append(int(blue[i]))
+        res.append(int(green[i]))
+        res.append(int(red[i]))
+    image_file.write(bytearray(res))
+    image_file.close()
 
 def writeycbcrrestored(comp, name):
     image_file = open('asserts/'+name+'.bmp','wb')
@@ -238,12 +249,16 @@ def clipping(comp):
 
 
 def psnr(comp, restcomp):
-
+    #print (len(comp),len(restcomp),'PSNR INPUT')
     sum = 0
-    for i in range(len(comp)):
+    for i in range(len(restcomp)):
         sum += (comp[i]-restcomp[i])**2
-    wh = (512**2)*(255**2)
-    psn = 10*math.log10(wh/sum)
+    #wh = 512*512*255**2
+    wh = 0
+    for j in range(len(comp)):
+        wh += 255 ** 2
+    #print(wh,'wh')
+    psn = 10*math.log10(wh//sum)
     return psn
 
 
@@ -261,20 +276,24 @@ def quadr(comp):
     tmp = 0
     m = mato(comp)
     #print(m)
-    for i in comp:
-        tmp += (i - m)**2
+    for i in range(len(comp)):
+        tmp += (comp[i] - m)**2
 
     #print(tmp)
 
-    res = math.sqrt(1/((512**2)-1)*tmp)
+    res = math.sqrt((1/262143)*tmp)
     return res
 
 
 def cor(comp1, comp2):
-    ma = mato(comp1)
-    mb = mato(comp2)
+    #print(len(comp1), len(comp2), 'cor INPUT')
+    ma = int(mato(comp1))
+    mb = int(mato(comp2))
+    print(ma,mb,'MATO')
     aminma = [i - ma for i in comp1]
+
     bminba = [i - mb for i in comp2]
+
     print(len(aminma), len(bminba))
     tc = [aminma[i]*bminba[i] for i in range(len(aminma))]
     core = mato(tc) / (quadr(comp1) * quadr(comp2))
@@ -290,8 +309,49 @@ def shift(steps,stepsy,lst):
             return lst
         lst[i] = lst[i+stepsy*512]
     return lst
+
+
+
+def supermandecimate(comp):
+    todel = []
+    for i in range(512):
+        if i % 2 == 0:
+            todel.append(i)
+    c = np.array(comp)
+    c = np.reshape(c, (512, 512))
+    for i in range(1,len(c)-1,1):
+        for j in range(1,len(c)-1,1):
+            c[i][j] = (c[i-1][j]+c[i+1][j]+c[i][j-1]+c[i][j+1])/4
+
+    c = c.reshape((262144))
+    return list(c)
+
+
+def cbcrdecimate(comp):
+    todel = []
+    for i in range(512):
+        if i % 2 == 0:
+            todel.append(i)
+    c = np.array(comp)
+    c = np.reshape(c,(512,512))
+    #c = np.delete(c, (todel), axis=0)
+    for i in range(1,len(c),2):
+        c[i-1] = c[i]
+    for i in range(len(c)):
+        for j in range(1,len(c[i]),2):
+            c[i][j-1] = c[i][j]
+    c = c.reshape((262144))
+    return list(c)
+
+
+
+
+
+
+
+
 def main():
-    rows = read_rows("asserts/whore.bmp")
+    rows = read_rows("asserts/trash.bmp")
 
 
     sub_pixels = repack_sub_pixels(rows)
@@ -499,20 +559,20 @@ def main():
     print(''+Style.RESET_ALL)
     print(len(green), len(red), len(blue))
     ycomp = [int(0.299*red[i]+0.587*green[i]+0.114*blue[i]) for i in range(len(green))]
-    cbcomp = [int(0.5643*(blue[i]-ycomp[i])+128) for i in range(len(green))]
-    crcomp = [int(0.7132*(red[i]-ycomp[i])+128) for i in range(len(green))]
+    cbcomp = [int(128 - (0.168736*red[i])-(0.331264 * green[i]) + 0.5*blue[i]) for i in range(len(green))]
+    crcomp = [int(128 + (0.5 * red[i]) - (0.418688 * green[i])- (0.081213 * blue[i])) for i in range(len(green))]
     writeycbcr(ycomp, 'ycomp')
     writeycbcr(cbcomp, 'cbcomp')
     writeycbcr(crcomp, 'crcomp')
     corg = math.fabs(cor(ycomp, cbcomp))
     corb = math.fabs(cor(ycomp, crcomp))
-    corr = math.fabs(cor(crcomp, cbcomp))
+    corr = math.fabs(cor(cbcomp, crcomp))
     corgg = math.fabs(cor(cbcomp, cbcomp))
     print(Fore.LIGHTGREEN_EX+'Cor YCB', corg)
     print('Cor YCR', corb)
     print('Cor CRCB', corr)
 
-    grestored = [int(ycomp[i]-0.714*(crcomp[i]-128)-0.334*(cbcomp[i]-128))for i in range(len(green))]
+    grestored = [int(ycomp[i]-0.34414*(cbcomp[i]-128)-0.71414*(crcomp[i]-128))for i in range(len(green))]
     rrestored = [int(ycomp[i] + 1.402*(crcomp[i]-128))for i in range(len(red))]
     brestored = [int(ycomp[i]+1.772*(cbcomp[i]-128))for i in range(len(blue))]
     grestored = clipping(grestored)
@@ -526,142 +586,142 @@ def main():
     print('PSNR', psnr(red, rrestored))
     print('' + Style.RESET_ALL)
     # ПРАВИЛЬНО тк сравнение двух одинаковых дает divbyzero
-    cbret = []
-    cbretnorm = []
-    cbdec = np.array(cbcomp)
-    cbdec = cbdec.reshape((512, 512))
-    for i, data in enumerate(cbdec):
+    # cbret = []
+    # cbretnorm = []
+    # cbdec = np.array(cbcomp)
+    # cbdec = cbdec.reshape((512, 512))
+    # for i, data in enumerate(cbdec):
+    #     if i % 2 == 0:
+    #         continue
+    #
+    #     for j, data in enumerate(cbdec[i]):
+    #         if j % 2 == 0:
+    #             continue
+    #         else:
+    #             cbret.append(data)
+    #             cbretnorm.append(data)
+    # print(len(cbret))
+    #
+    # crred = []
+    # crrednorm = []
+    # crdec = np.array(crcomp)
+    # crdec = crdec.reshape((512, 512))
+    # for i, data in enumerate(crdec):
+    #     if i % 2 == 0:
+    #         continue
+    #
+    #     for j, datas in enumerate(crdec[i]):
+    #         if j % 2 == 0:
+    #             continue
+    #         else:
+    #             crred.append(datas)
+    #             crrednorm.append(datas)
+    # print(len(crred))
+    # print(Fore.LIGHTGREEN_EX+'(A)PSNR cb restored', psnr(cbret, cbcomp))
+    # print('(A)PSNR cr restored', psnr(crred, crcomp), ''+Style.RESET_ALL)
+    # crred = writeycbcrrestored(crred, 'crredrest')
+    # cbret = writeycbcrrestored(cbret, 'cbretrest')
+    # gfycbcr = [ycomp[i] - 0.714 * (crred[i] - 128) - 0.334 * (cbret[i] - 128) for i in range(len(ycomp))]
+    # rfycbcr = [ycomp[i] + 1.402 * (crred[i] - 128) for i in range(len(ycomp))]
+    # bfycbcr = [ycomp[i] + 1.772 * (cbret[i] - 128) for i in range(len(ycomp))]
+    # gfycbcr = clipping(gfycbcr)
+    # rfycbcr = clipping(rfycbcr)
+    # bfycbcr = clipping(bfycbcr)
+    # print(Fore.LIGHTGREEN_EX+'(A)PSNR G', psnr(green, gfycbcr))
+    # print('(A)PSNR R', psnr(red, rfycbcr))
+    # print('(A)PSNR B', psnr(blue, bfycbcr), ''+Style.RESET_ALL)
+
+    cbdecim = []
+    crdecim = []
+
+    cbvoss = []
+    crvoss = []
+    cbshaped = np.array(cbcomp).reshape((512,512))
+    for i in range(len(cbshaped)):
+        for j in range(1,len(cbshaped),2):
+            cbshaped[i][j] = cbshaped[i][j-1]
+
+    todel = []
+    for i in range(512):
         if i % 2 == 0:
-            continue
+            todel.append(i)
 
-        for j, data in enumerate(cbdec[i]):
-            if j % 2 == 0:
-                continue
-            else:
-                cbret.append(data)
-                cbretnorm.append(data)
-    print(len(cbret))
+    #cbshaped = np.delete(cbshaped, (todel), axis=0)
+    cbshaped = np.delete(cbshaped, (todel), axis=1)
+    print(cbshaped.shape)
 
-    crred = []
-    crrednorm = []
-    crdec = np.array(crcomp)
-    crdec = crdec.reshape((512, 512))
-    for i, data in enumerate(crdec):
+    for i in range(len(cbshaped)):
+        #cbvoss.extend(cbshaped.tolist())
+        #cbvoss.extend(cbshaped.tolist())
+        for j in range(len(cbshaped[i])):
+            for l in range(2):
+                cbvoss.append(int(cbshaped[i][j]))
+
+    print(len(cbvoss))
+
+    crshaped = np.array(crcomp).reshape((512, 512))
+
+    for i in range(len(crshaped)):
+        for j in range(1, len(crshaped), 2):
+            crshaped[i][j] = crshaped[i][j - 1]
+
+    todel = []
+    for i in range(512):
         if i % 2 == 0:
-            continue
+            todel.append(i)
 
-        for j, datas in enumerate(crdec[i]):
-            if j % 2 == 0:
-                continue
-            else:
-                crred.append(datas)
-                crrednorm.append(datas)
-    print(len(crred))
-    print(Fore.LIGHTGREEN_EX+'(A)PSNR cb restored', psnr(cbret, cbcomp))
-    print('(A)PSNR cr restored', psnr(crred, crcomp), ''+Style.RESET_ALL)
-    crred = writeycbcrrestored(crred, 'crredrest')
-    cbret = writeycbcrrestored(cbret, 'cbretrest')
-    gfycbcr = [ycomp[i] - 0.714 * (crred[i] - 128) - 0.334 * (cbret[i] - 128) for i in range(len(ycomp))]
-    rfycbcr = [ycomp[i] + 1.402 * (crred[i] - 128) for i in range(len(ycomp))]
-    bfycbcr = [ycomp[i] + 1.772 * (cbret[i] - 128) for i in range(len(ycomp))]
-    gfycbcr = clipping(gfycbcr)
-    rfycbcr = clipping(rfycbcr)
-    bfycbcr = clipping(bfycbcr)
-    print(Fore.LIGHTGREEN_EX+'(A)PSNR G', psnr(green, gfycbcr))
-    print('(A)PSNR R', psnr(red, rfycbcr))
-    print('(A)PSNR B', psnr(blue, bfycbcr), ''+Style.RESET_ALL)
+    #crshaped = np.delete(crshaped, (todel), axis=0)
+    crshaped = np.delete(crshaped, (todel), axis=1)
+    print(crshaped.shape)
 
-    bcrret = []
-    bcrretnorm = []
+    for i in range(len(crshaped)):
+        for j in range(len(cbshaped[i])):
+            for l in range(2):
+                crvoss.append(int(cbshaped[i][j]))
 
-    for i in range(0,len(crdec),2):
-
-        for j in range(0,len(crdec[i]),2):
-            if i == 0 or j == 0 or i == len(crdec)-1 or j == len(crdec[i])-1:
-                bcrret.append(crdec[i][j])
-                bcrretnorm.append(crdec[i][j])
+    crvoss = cbcrdecimate(crcomp)
+    cbvoss = cbcrdecimate(cbcomp)
+    print(len(crvoss))
+    g = [int(ycomp[i] - 0.7169 * (crvoss[i] - 128) - 0.3455 * (cbvoss[i] - 128)) for i in range(len(ycomp))]
+    r = [int(ycomp[i] + 1.4075 * (crvoss[i] - 128)) for i in range(len(ycomp))]
+    b = [int(ycomp[i] + 1.7790 * (cbvoss[i] - 128)) for i in range(len(ycomp))]
+    r = clipping(r)
+    g = clipping(g)
+    b = clipping(b)
+    writered(r,'wow')
+    writeblue(b, 'wow1')
+    writegreen(g, 'wow2')
+    print(psnr(red,r))
+    print(psnr(green, g))
+    print(psnr(blue, b))
+    print(psnr(cbvoss, cbcomp))
+    print(psnr(crvoss, crcomp))
+    print(len(cbcrdecimate(cbcomp)))
+    writepic(b,g,r,'lol')
 
 
-            else:
-
-                sredn = (crdec[i][j+1]+crdec[i+1][j]+crdec[i][j-1]+crdec[i-1][j])/4
-                bcrret.append(int(sredn))
-                bcrretnorm.append(int(sredn))
-
-
-    print(len(bcrret))
-
-    bcbret = []
-    bcbnorm = []
-
-    for i in range(0, len(crdec), 2):
-
-        for j in range(0, len(crdec[i]), 2):
-            if i == 0 or j == 0 or i == len(crdec) - 1 or j == len(crdec[i]) - 1:
-                bcbret.append(crdec[i][j])
-                bcbnorm.append(crdec[i][j])
-
-            else:
-
-                sredn = (crdec[i][j + 1] + crdec[i + 1][j] + crdec[i][j - 1] + crdec[i - 1][j]) / 4
-                bcbret.append(int(sredn))
-                bcbnorm.append(int(sredn))
-
-    print(len(bcbret))
-    print(Fore.LIGHTGREEN_EX+'(B)PSNR cb restored', psnr(bcbret, cbcomp))
-    print('(B)PSNR cr restored', psnr(bcrret, crcomp), ''+Style.RESET_ALL)
-    bcrret = writeycbcrrestored(bcrret, 'bcrret')
-    bcbret = writeycbcrrestored(bcbret, 'bcbret')
-    gtrash = [ycomp[i] - 0.714 * (bcrret[i] - 128) - 0.334 * (bcbret[i] - 128) for i in range(len(ycomp))]
-    rtrash = [ycomp[i] + 1.402 * (bcrret[i] - 128) for i in range(len(ycomp))]
-    btrash = [ycomp[i] + 1.772 * (bcbret[i] - 128) for i in range(len(ycomp))]
-    gtrash = clipping(gtrash)
-    rtrash = clipping(rtrash)
-    btrash = clipping(btrash)
-    print(Fore.LIGHTGREEN_EX+'(B)PSNR G', psnr(green, gtrash))
-    print('(B)PSNR R', psnr(red, rtrash))
-    print('(B)PSNR B', psnr(blue, btrash), ''+Style.RESET_ALL)
+    #bbbbbbb
+    crvossb = supermandecimate(crcomp)
+    cbvossb = supermandecimate(cbcomp)
+    print(len(crvossb))
+    g = [int(ycomp[i] - 0.7169 * (crvossb[i] - 128) - 0.3455 * (cbvossb[i] - 128)) for i in range(len(ycomp))]
+    r = [int(ycomp[i] + 1.4075 * (crvossb[i] - 128)) for i in range(len(ycomp))]
+    b = [int(ycomp[i] + 1.7790 * (cbvossb[i] - 128)) for i in range(len(ycomp))]
+    r = clipping(r)
+    g = clipping(g)
+    b = clipping(b)
+    writered(r,'wowBB')
+    writeblue(b, 'wowBB1')
+    writegreen(g, 'wowBB2')
+    print(psnr(red,r))
+    print(psnr(green, g))
+    print(psnr(blue, b))
+    print(psnr(cbvossb, cbcomp))
+    print(psnr(crvossb, crcomp))
+    print(len(supermandecimate(cbcomp)))
+    writepic(b,g,r,'lolB')
 
 
-    red = red[:int(len(red)/4)]
-    print(len(red))
-    green = green[:int(len(green) / 4)]
-    print(len(green))
-    blue = blue[:int(len(blue) / 4)]
-    print(len(blue))
-    crcomp = crcomp[:int(len(crcomp) / 4)]
-    print(len(crcomp))
-    cbcomp = cbcomp[:int(len(cbcomp) / 4)]
-    print(len(cbcomp))
-    ycomp = ycomp[:int(len(ycomp) / 4)]
-    print(len(ycomp))
 
-    print(Fore.LIGHTGREEN_EX + '(A)PSNR cb restored WH/4', psnr(cbretnorm, cbcomp))
-    print('(A)PSNR cr restored WH/4', psnr(crrednorm, crcomp), '' + Style.RESET_ALL)
-    crred = writeycbcrrestored(crrednorm, 'crredrest')
-    cbret = writeycbcrrestored(cbretnorm, 'cbretrest')
-    gfycbcr = [ycomp[i] - 0.714 * (crrednorm[i] - 128) - 0.334 * (cbretnorm[i] - 128) for i in range(len(ycomp))]
-    rfycbcr = [ycomp[i] + 1.402 * (crrednorm[i] - 128) for i in range(len(ycomp))]
-    bfycbcr = [ycomp[i] + 1.772 * (cbretnorm[i] - 128) for i in range(len(ycomp))]
-    gfycbcr = clipping(gfycbcr)
-    rfycbcr = clipping(rfycbcr)
-    bfycbcr = clipping(bfycbcr)
-    print(Fore.LIGHTGREEN_EX + '(A)PSNR G WH/4', psnr(green, gfycbcr))
-    print('(A)PSNR R WH/4', psnr(red, rfycbcr))
-    print('(A)PSNR B WH/4', psnr(blue, bfycbcr), '' + Style.RESET_ALL)
-
-    print(Fore.LIGHTGREEN_EX+'(B)PSNR cb restored WH/4', psnr(bcbnorm, cbcomp))
-    print('(B)PSNR cr restored WH/4', psnr(bcrretnorm, crcomp), ''+Style.RESET_ALL)
-    bcrret = writeycbcrrestored(bcrretnorm, 'bcrret')
-    bcbret = writeycbcrrestored(bcbnorm, 'bcbret')
-    gtrash = [ycomp[i] - 0.714 * (bcrretnorm[i] - 128) - 0.334 * (bcbnorm[i] - 128) for i in range(len(ycomp))]
-    rtrash = [ycomp[i] + 1.402 * (bcrretnorm[i] - 128) for i in range(len(ycomp))]
-    btrash = [ycomp[i] + 1.772 * (bcbnorm[i] - 128) for i in range(len(ycomp))]
-    gtrash = clipping(gtrash)
-    rtrash = clipping(rtrash)
-    btrash = clipping(btrash)
-    print(Fore.LIGHTGREEN_EX+'(B)PSNR G WH/4', psnr(green, gtrash))
-    print('(B)PSNR R WH/4', psnr(red, rtrash))
-    print('(B)PSNR B WH/4', psnr(blue, btrash), ''+Style.RESET_ALL)
 if __name__ == '__main__':
     main()
