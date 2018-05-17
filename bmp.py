@@ -382,8 +382,14 @@ def cbcrdecimate4x(comp):
     return list(c)
 
 
-
-
+def hx(comp):
+    dictcomp = dict.fromkeys(comp,0)
+    for i in comp:
+        dictcomp[i] +=1
+    hx = 0
+    for i, data in dictcomp.items():
+        hx += (dictcomp[i]/262144)*math.log(dictcomp[i]/262144,2)
+    return abs(hx)
 
 
 
@@ -658,6 +664,13 @@ def main():
     ycomp = [int(0.299*red[i]+0.587*green[i]+0.114*blue[i]) for i in range(len(green))]
     cbcomp = [int(0.5643*(blue[i] - ycomp[i])+128) for i in range(len(green))]
     crcomp = [int(0.7132*(red[i] - ycomp[i])+128) for i in range(len(green))]
+    print(Fore.LIGHTGREEN_EX+'HX BLUE',hx(blue))
+    print('HX RED',hx(red))
+    print('HX GREEN',hx(green))
+    print('HX CB',hx(cbcomp))
+    print('HX CR',hx(crcomp))
+    print('HX Y',str(hx(ycomp))+Style.RESET_ALL)
+
     writeycbcr(ycomp, 'ycomp')
     writeycbcr(cbcomp, 'cbcomp')
     writeycbcr(crcomp, 'crcomp')
@@ -887,6 +900,8 @@ def main():
     plt.hist(ycomp, 55, density=True, facecolor='g', alpha=0.75)
     plt.grid(True)
     plt.show()
+
+
 
 
 
