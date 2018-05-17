@@ -1,5 +1,6 @@
 import math
 from colorama import *
+from PIL import Image, ImageDraw
 import numpy as np
 from pprint import pprint
 import matplotlib.pyplot as plt
@@ -74,7 +75,7 @@ def filterblue(s_pixels):
     blueret = []
     image_filee = open('asserts/newblue.bmp', "wb")
     image_filee.write(bytearray(header))
-    for i in s_pixels[0::3]:
+    for i in s_pixels:
         blue.append(i)
         blue.append(0)
         blue.append(0)
@@ -90,7 +91,7 @@ def filtergreen(s_pixels):
     greenret = []
     image_filee = open('asserts/newgreen.bmp', "wb")
     image_filee.write(bytearray(header))
-    for i in s_pixels[1::3]:
+    for i in s_pixels:
         green.append(0)
         green.append(i)
         green.append(0)
@@ -108,7 +109,7 @@ def filterred(s_pixels):
     redret = []
     image_filee = open('asserts/newred.bmp', "wb")
     image_filee.write(bytearray(header))
-    for i in s_pixels[2::3]:
+    for i in s_pixels:
         red.append(0)
         red.append(0)
         red.append(i)
@@ -165,8 +166,10 @@ def writeycbcr(comp, name):
         res.append(int(i))
         res.append(int(i))
         res.append(int(i))
-    image_file.write(bytearray(res))
+    #image_file.write(bytearray(res))
     image_file.close()
+
+
 def writepic(red,green,blue, name):
     image_file = open('asserts/'+name+'.bmp', 'wb')
     image_file.write(bytearray(header))
@@ -202,7 +205,7 @@ def writeycbcrrestored(comp, name):
         res.append(int(i))
         num += 1
     print(num)
-    image_file.write(bytearray(res))
+    #image_file.write(bytearray(res))
     image_file.close()
     return res
 
@@ -228,7 +231,7 @@ def writeycbcrrestoredb(comp, name):
         num += 1
 
     print(num)
-    image_file.write(bytearray(res))
+    #image_file.write(bytearray(res))
     image_file.close()
     return res
 
@@ -344,6 +347,44 @@ def cbcrdecimate(comp):
     return list(c)
 
 
+def supermandecimate4x(comp):
+    todel = []
+    for i in range(512):
+        if i % 2 == 0:
+            todel.append(i)
+    c = np.array(comp)
+    c = np.reshape(c, (512, 512))
+    for i in range(1,len(c)-1,1):
+        for j in range(1,len(c)-1,1):
+            c[i][j] = (c[i-1][j]+c[i+1][j]+c[i][j-1]+c[i][j+1]+c[i-1][j-1]+c[i+1][j+1]+c[i-1][j+1]+c[i+1][j-1])/8
+
+    c = c.reshape((262144))
+    return list(c)
+
+
+def cbcrdecimate4x(comp):
+    todel = []
+    for i in range(512):
+        if i % 2 == 0:
+            todel.append(i)
+            todel.append(i+1)
+    c = np.array(comp)
+    c = np.reshape(c,(512,512))
+    #c = np.delete(c, (todel), axis=0)
+    for i in range(3,len(c),3):
+        c[i-1] = c[i]
+        c[i-2] = c[i]
+    for i in range(len(c)):
+        for j in range(3,len(c[i]),3):
+            c[i][j-1] = c[i][j]
+            c[i][j-2] = c[i][j]
+    c = c.reshape((262144))
+    return list(c)
+
+
+
+
+
 
 
 
@@ -353,14 +394,67 @@ def cbcrdecimate(comp):
 def main():
     rows = read_rows("asserts/trash.bmp")
 
-
+    blue = []
+    green = []
+    red = []
     sub_pixels = repack_sub_pixels(rows)
     #sub_pixels = [i for i in reversed(sub_pixels)]
-    blue = filterblue(sub_pixels)
+    image = Image.open("asserts/trash.bmp")
+    image = image.rotate(-90)
+    imagered = image.copy()
+    imagegreen = image.copy()
+    imageblue = image.copy()
+    pix = image.load()
+    width = image.size[0] #Определяем ширину.
+    height = image.size[1] #Определяем высоту.
+    draw = ImageDraw.Draw(image) #Создаем инструмент для рисования.
+    drawred = ImageDraw.Draw(imagered)
+    drawgreen = ImageDraw.Draw(imagegreen)
+    drawblue = ImageDraw.Draw(imageblue)
+    tos = []
+    for i in range(width):
+           for j in range(height):
+                     a = pix[i, j][0]
+                     b = pix[i, j][1]
+                     c = pix[i, j][2]
+                     #draw.point((i, j), (0, 0, c))
+                     blue.append(c)
+                     red.append(a)
+                     green.append(b)
+    # for i in range(width):
+    #        for j in range(height):
+    #                  a = pix[i, j][0]
+    #                  b = pix[i, j][1]
+    #                  c = pix[i, j][2]
+    #                  drawred.point((i, j), (a, 0, 0))
+    #
+    #
+    # imagered.save('asserts/newred.bmp')
+    # for i in range(width):
+    #        for j in range(height):
+    #                  a = pix[i, j][0]
+    #                  b = pix[i, j][1]
+    #                  c = pix[i, j][2]
+    #                  drawgreen.point((i, j), (0, b, 0))
+    #
+    #
+    # imagegreen.save('asserts/newgreen.bmp')
+    # for i in range(width):
+    #        for j in range(height):
+    #                  a = pix[i, j][0]
+    #                  b = pix[i, j][1]
+    #                  c = pix[i, j][2]
+    #                  drawblue.point((i, j), (0, 0, c))
+    #
+    #
+    # imageblue.save('asserts/newblue.bmp')
 
-    green = filtergreen(sub_pixels)
 
-    red = filterred(sub_pixels)
+    filterblue(blue)
+
+    filtergreen(green)
+
+    filterred(red)
 
     blueshaped = np.array(blue)
     blueshaped = blueshaped.reshape((512,512))
@@ -558,9 +652,12 @@ def main():
     print('Cor RG', corr)
     print(''+Style.RESET_ALL)
     print(len(green), len(red), len(blue))
+    # ycomp = [int(0.299*red[i]+0.587*green[i]+0.114*blue[i]) for i in range(len(green))]
+    # cbcomp = [int(128 - (0.168736*red[i])-(0.331264 * green[i]) + 0.5*blue[i]) for i in range(len(green))]
+    # crcomp = [int(128 + (0.5 * red[i]) - (0.418688 * green[i])- (0.081213 * blue[i])) for i in range(len(green))]
     ycomp = [int(0.299*red[i]+0.587*green[i]+0.114*blue[i]) for i in range(len(green))]
-    cbcomp = [int(128 - (0.168736*red[i])-(0.331264 * green[i]) + 0.5*blue[i]) for i in range(len(green))]
-    crcomp = [int(128 + (0.5 * red[i]) - (0.418688 * green[i])- (0.081213 * blue[i])) for i in range(len(green))]
+    cbcomp = [int(0.5643*(blue[i] - ycomp[i])+128) for i in range(len(green))]
+    crcomp = [int(0.7132*(red[i] - ycomp[i])+128) for i in range(len(green))]
     writeycbcr(ycomp, 'ycomp')
     writeycbcr(cbcomp, 'cbcomp')
     writeycbcr(crcomp, 'crcomp')
@@ -636,48 +733,48 @@ def main():
 
     cbvoss = []
     crvoss = []
-    cbshaped = np.array(cbcomp).reshape((512,512))
-    for i in range(len(cbshaped)):
-        for j in range(1,len(cbshaped),2):
-            cbshaped[i][j] = cbshaped[i][j-1]
-
-    todel = []
-    for i in range(512):
-        if i % 2 == 0:
-            todel.append(i)
-
-    #cbshaped = np.delete(cbshaped, (todel), axis=0)
-    cbshaped = np.delete(cbshaped, (todel), axis=1)
-    print(cbshaped.shape)
-
-    for i in range(len(cbshaped)):
-        #cbvoss.extend(cbshaped.tolist())
-        #cbvoss.extend(cbshaped.tolist())
-        for j in range(len(cbshaped[i])):
-            for l in range(2):
-                cbvoss.append(int(cbshaped[i][j]))
-
-    print(len(cbvoss))
-
-    crshaped = np.array(crcomp).reshape((512, 512))
-
-    for i in range(len(crshaped)):
-        for j in range(1, len(crshaped), 2):
-            crshaped[i][j] = crshaped[i][j - 1]
-
-    todel = []
-    for i in range(512):
-        if i % 2 == 0:
-            todel.append(i)
-
-    #crshaped = np.delete(crshaped, (todel), axis=0)
-    crshaped = np.delete(crshaped, (todel), axis=1)
-    print(crshaped.shape)
-
-    for i in range(len(crshaped)):
-        for j in range(len(cbshaped[i])):
-            for l in range(2):
-                crvoss.append(int(cbshaped[i][j]))
+    # cbshaped = np.array(cbcomp).reshape((512,512))
+    # for i in range(len(cbshaped)):
+    #     for j in range(1,len(cbshaped),2):
+    #         cbshaped[i][j] = cbshaped[i][j-1]
+    #
+    # todel = []
+    # for i in range(512):
+    #     if i % 2 == 0:
+    #         todel.append(i)
+    #
+    # #cbshaped = np.delete(cbshaped, (todel), axis=0)
+    # cbshaped = np.delete(cbshaped, (todel), axis=1)
+    # print(cbshaped.shape)
+    #
+    # for i in range(len(cbshaped)):
+    #     #cbvoss.extend(cbshaped.tolist())
+    #     #cbvoss.extend(cbshaped.tolist())
+    #     for j in range(len(cbshaped[i])):
+    #         for l in range(2):
+    #             cbvoss.append(int(cbshaped[i][j]))
+    #
+    # print(len(cbvoss))
+    #
+    # crshaped = np.array(crcomp).reshape((512, 512))
+    #
+    # for i in range(len(crshaped)):
+    #     for j in range(1, len(crshaped), 2):
+    #         crshaped[i][j] = crshaped[i][j - 1]
+    #
+    # todel = []
+    # for i in range(512):
+    #     if i % 2 == 0:
+    #         todel.append(i)
+    #
+    # #crshaped = np.delete(crshaped, (todel), axis=0)
+    # crshaped = np.delete(crshaped, (todel), axis=1)
+    # print(crshaped.shape)
+    #
+    # for i in range(len(crshaped)):
+    #     for j in range(len(cbshaped[i])):
+    #         for l in range(2):
+    #             crvoss.append(int(cbshaped[i][j]))
 
     crvoss = cbcrdecimate(crcomp)
     cbvoss = cbcrdecimate(cbcomp)
@@ -691,13 +788,13 @@ def main():
     writered(r,'wow')
     writeblue(b, 'wow1')
     writegreen(g, 'wow2')
-    print(psnr(red,r))
+    print(Fore.LIGHTGREEN_EX+str(psnr(red,r)))
     print(psnr(green, g))
     print(psnr(blue, b))
     print(psnr(cbvoss, cbcomp))
-    print(psnr(crvoss, crcomp))
+    print(str(psnr(crvoss, crcomp))+Style.RESET_ALL)
     print(len(cbcrdecimate(cbcomp)))
-    writepic(b,g,r,'lol')
+    #writepic(b,g,r,'lol')
 
 
     #bbbbbbb
@@ -713,13 +810,83 @@ def main():
     writered(r,'wowBB')
     writeblue(b, 'wowBB1')
     writegreen(g, 'wowBB2')
-    print(psnr(red,r))
+    print(Fore.LIGHTGREEN_EX+str(psnr(red,r)))
     print(psnr(green, g))
     print(psnr(blue, b))
     print(psnr(cbvossb, cbcomp))
-    print(psnr(crvossb, crcomp))
+    print(str(psnr(crvossb, crcomp))+Style.RESET_ALL)
     print(len(supermandecimate(cbcomp)))
-    writepic(b,g,r,'lolB')
+    #writepic(b,g,r,'lolB')
+
+
+
+
+    crvoss = cbcrdecimate4x(crcomp)
+    cbvoss = cbcrdecimate4x(cbcomp)
+    print(len(crvoss))
+    g = [int(ycomp[i] - 0.7169 * (crvoss[i] - 128) - 0.3455 * (cbvoss[i] - 128)) for i in range(len(ycomp))]
+    r = [int(ycomp[i] + 1.4075 * (crvoss[i] - 128)) for i in range(len(ycomp))]
+    b = [int(ycomp[i] + 1.7790 * (cbvoss[i] - 128)) for i in range(len(ycomp))]
+    r = clipping(r)
+    g = clipping(g)
+    b = clipping(b)
+    writered(r,'wow')
+    writeblue(b, 'wow1')
+    writegreen(g, 'wow2')
+    print(Fore.LIGHTGREEN_EX+str(psnr(red,r)))
+    print(psnr(green, g))
+    print(psnr(blue, b))
+    print(psnr(cbvoss, cbcomp))
+    print(str(psnr(crvoss, crcomp))+Style.RESET_ALL)
+    print(len(cbcrdecimate(cbcomp)))
+    #writepic(b,g,r,'lol')
+
+
+
+    crvoss = supermandecimate4x(crcomp)
+    cbvoss = supermandecimate4x(cbcomp)
+    print(len(crvoss))
+    g = [int(ycomp[i] - 0.7169 * (crvoss[i] - 128) - 0.3455 * (cbvoss[i] - 128)) for i in range(len(ycomp))]
+    r = [int(ycomp[i] + 1.4075 * (crvoss[i] - 128)) for i in range(len(ycomp))]
+    b = [int(ycomp[i] + 1.7790 * (cbvoss[i] - 128)) for i in range(len(ycomp))]
+    r = clipping(r)
+    g = clipping(g)
+    b = clipping(b)
+    writered(r,'wow')
+    writeblue(b, 'wow1')
+    writegreen(g, 'wow2')
+    print(Fore.LIGHTGREEN_EX+str(psnr(red,r)))
+    print(psnr(green, g))
+    print(psnr(blue, b))
+    print(psnr(cbvoss, cbcomp))
+    print(str(psnr(crvoss, crcomp))+Style.RESET_ALL)
+    print(len(cbcrdecimate(cbcomp)))
+    #writepic(b,g,r,'lol')
+
+
+    plt.hist(blue, 100, density=True, facecolor='g', alpha=0.75)
+    plt.grid(True)
+    plt.show()
+
+    plt.hist(green, 100, density=True, facecolor='g', alpha=0.75)
+    plt.grid(True)
+    plt.show()
+
+    plt.hist(red, 100, density=True, facecolor='g', alpha=0.75)
+    plt.grid(True)
+    plt.show()
+
+    plt.hist(cbcomp, 55, density=True, facecolor='g', alpha=0.75)
+    plt.grid(True)
+    plt.show()
+
+    plt.hist(crcomp, 55, density=True, facecolor='g', alpha=0.75)
+    plt.grid(True)
+    plt.show()
+
+    plt.hist(ycomp, 55, density=True, facecolor='g', alpha=0.75)
+    plt.grid(True)
+    plt.show()
 
 
 
